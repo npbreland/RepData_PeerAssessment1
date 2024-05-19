@@ -8,7 +8,8 @@ output:
 
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 unzip("activity.zip")
 activity <- read.csv("activity.csv")
 ```
@@ -16,15 +17,17 @@ activity <- read.csv("activity.csv")
 ## What is mean total number of steps taken per day?
 
 Note that steps indicated as `NA` will be treated as 0.
-```{r}
+
+```r
 totals <- with(activity, tapply(steps, date, sum, na.rm = TRUE))
 mean_steps <- mean(totals)
 ```
 
-The mean total number of steps taken per day is **`r mean_steps`**.
+The mean total number of steps taken per day is **9354.2295082**.
 
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 mean_interval_steps <- with(activity, tapply(steps, interval, mean, na.rm = TRUE))
 plot(
   dimnames(mean_interval_steps)[[1]],
@@ -35,22 +38,27 @@ plot(
 )
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 
 ## Imputing missing values
 Where there are missing values, we will simply impute them with the average for that particular 5-minute interval for the other days.
 
 First, we need to calculate the average steps for each interval for the non-missing intervals. So we take a subset of the data that contains only the complete cases.
-```{r}
+
+```r
 complete_activity <- activity[complete.cases(activity),]
 ```
 
 Now we'll get the average steps for each interval like we did for the previous question.
-```{r}
+
+```r
 mean_interval_steps_complete <- with(complete_activity, tapply(steps, interval, mean))
 ```
 
 Then we can impute the data where it is missing.
-```{r}
+
+```r
 steps_complete <- as.vector(mean_interval_steps_complete)
 intervals <- dimnames(mean_interval_steps_complete)[[1]]
 
@@ -69,18 +77,23 @@ for (i in 1:nrow(new_activity)) {
 ```
 
 Finally, we can analyze the results of imputing the number of steps.
-```{r}
+
+```r
 totals <- with(new_activity, tapply(steps, date, sum))
 hist(totals, main = "Daily steps", xlab = "Number of steps")
+```
 
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
+```r
 mean_steps <- mean(totals)
 median_steps <- median(totals)
 ```
 
 After the values are imputed, here are the results:  
 
-* Mean steps per day: **`r format(mean_steps)`**
-* Median steps per day: **`r format(median_steps)`** 
+* Mean steps per day: **10766.19**
+* Median steps per day: **10766.19** 
 
 Imputing the missing data increases the estimate for daily number of steps.
 
@@ -88,7 +101,8 @@ Imputing the missing data increases the estimate for daily number of steps.
 
 First, we'll create a new factor variable. Either "weekday" or "weekend".
 
-```{r}
+
+```r
 days <- weekdays(as.Date(new_activity$date)) 
 is_weekend <- function(day) {
   if(day == "Saturday" | day == "Sunday") "weekend" else "weekday"
@@ -98,7 +112,8 @@ new_activity$weekend_or_weekday <- sapply(days, is_weekend)
 
 Now we'll take the average number of steps taken in each interval, grouped by weekends and weekdays.
 
-```{r}
+
+```r
 steps_weekday <- subset(new_activity, weekend_or_weekday == "weekday")
 
 mean_interval_steps_weekday <- with(steps_weekday, tapply(steps, interval, mean))
@@ -124,7 +139,8 @@ df <- rbind(df_weekday, df_weekend)
 
 Finally, we'll create a panel plot for the two subsets using the lattice plotting system.
 
-```{r}
+
+```r
 library(lattice)
 xyplot(
   steps ~ interval | weekday_or_weekend,
@@ -133,3 +149,5 @@ xyplot(
   type = "l"
 )
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
